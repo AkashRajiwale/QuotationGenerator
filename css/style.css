@@ -651,12 +651,13 @@ table.history-table td {
     align-items: stretch;
   }
   .app-header .brand { font-size: 1rem; justify-content: center; }
-  .header-actions { width: 100%; flex-wrap: nowrap; gap: 6px; min-width: 0; }
+  /* four actions fit as a 2x2 grid rather than four cramped slivers */
+  .header-actions { width: 100%; flex-wrap: wrap; gap: 6px; min-width: 0; }
   .header-actions .btn {
-    flex: 1;
+    flex: 1 1 calc(50% - 3px);
     min-width: 0;
     padding: 10px 4px;
-    font-size: 0.74rem;
+    font-size: 0.76rem;
     white-space: normal;
     text-align: center;
     line-height: 1.15;
