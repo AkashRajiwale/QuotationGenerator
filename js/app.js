@@ -185,7 +185,14 @@ function init() {
 
   if (draft) {
     state = draft;
-    if (savedBusiness) state.business = { ...defaultBusiness(), ...savedBusiness };
+    if (savedBusiness) {
+      state.business = { ...defaultBusiness(), ...savedBusiness };
+    } else if (!state.business || !state.business.name || !state.business.name.trim()) {
+      // Old draft from before default business details existed (or the name
+      // was blanked out) — fall back to the built-in defaults instead of
+      // leaving the business block empty forever.
+      state.business = defaultBusiness();
+    }
   } else {
     state = defaultState(nextCounter());
     if (savedBusiness) state.business = { ...defaultBusiness(), ...savedBusiness };
