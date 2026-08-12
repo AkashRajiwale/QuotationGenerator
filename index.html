@@ -132,24 +132,10 @@
       <summary>4. Items</summary>
       <div class="card-body">
         <label class="checkbox-row">
-          <input type="checkbox" id="showHsn"> Show HSN/SAC column
+          <input type="checkbox" id="showHsn"> Show HSN/SAC field
         </label>
-        <div class="table-scroll">
-          <table class="items-editor" id="itemsEditor">
-            <thead>
-              <tr>
-                <th class="col-num">#</th>
-                <th class="col-name">Item Name</th>
-                <th class="col-hsn hidden-col">HSN/SAC</th>
-                <th class="col-qty">Qty</th>
-                <th class="col-price">Price/Unit</th>
-                <th class="col-amount">Amount</th>
-                <th class="col-del"></th>
-              </tr>
-            </thead>
-            <tbody id="itemsBody"></tbody>
-          </table>
-        </div>
+        <p class="tip">💡 Tap the item field to pick from your plant/product list, or just type a new item name.</p>
+        <div class="items-list" id="itemsBody"></div>
         <button type="button" class="btn secondary" id="addItemBtn">+ Add Item</button>
       </div>
     </details>
@@ -226,28 +212,30 @@
         </div>
       </div>
 
-      <table class="items-table">
-        <thead>
-          <tr>
-            <th class="col-num">#</th>
-            <th class="col-name">Item Name</th>
-            <th class="col-hsn hidden-col">HSN/SAC</th>
-            <th class="col-qty">Qty</th>
-            <th class="col-price">Price/Unit</th>
-            <th class="col-amount">Amount</th>
-          </tr>
-        </thead>
-        <tbody id="previewItemsBody"></tbody>
-        <tfoot>
-          <tr class="total-row">
-            <td colspan="2" class="totals-label-cell">Total</td>
-            <td class="col-hsn hidden-col"></td>
-            <td id="previewTotalQty" class="col-qty"></td>
-            <td></td>
-            <td id="previewTotalAmount" class="col-amount"></td>
-          </tr>
-        </tfoot>
-      </table>
+      <div class="table-scroll">
+        <table class="items-table">
+          <thead>
+            <tr>
+              <th class="col-num">#</th>
+              <th class="col-name">Item Name</th>
+              <th class="col-hsn hidden-col">HSN/SAC</th>
+              <th class="col-qty">Qty</th>
+              <th class="col-price">Price/Unit</th>
+              <th class="col-amount">Amount</th>
+            </tr>
+          </thead>
+          <tbody id="previewItemsBody"></tbody>
+          <tfoot>
+            <tr class="total-row">
+              <td colspan="2" class="totals-label-cell">Total</td>
+              <td class="col-hsn hidden-col"></td>
+              <td id="previewTotalQty" class="col-qty"></td>
+              <td></td>
+              <td id="previewTotalAmount" class="col-amount"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
 
       <div class="totals-block">
         <div class="totals-box">
@@ -294,12 +282,14 @@
     </div>
     <div class="modal-body">
       <div id="historyEmpty" class="hidden">No saved quotations yet. Fill the form and click "Save Quotation".</div>
-      <table class="history-table" id="historyTable">
-        <thead>
-          <tr><th>No.</th><th>Client</th><th>Date</th><th>Total</th><th></th></tr>
-        </thead>
-        <tbody id="historyBody"></tbody>
-      </table>
+      <div class="table-scroll">
+        <table class="history-table" id="historyTable">
+          <thead>
+            <tr><th>No.</th><th>Client</th><th>Date</th><th>Total</th><th></th></tr>
+          </thead>
+          <tbody id="historyBody"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 </div>

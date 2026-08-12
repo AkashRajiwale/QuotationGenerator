@@ -9,6 +9,45 @@ const LS_COUNTER = "qm_counter_v1";
 
 const todayISO = () => new Date().toISOString().slice(0, 10);
 
+/* Item catalog seeded from the reference estimate (Laxmi Garden Developments).
+   Used to power the "type or pick" item dropdown — users can still type any
+   new item name that isn't in this list. */
+const ITEM_CATALOG = [
+  { name: "Green drawf coconut 6 ft", price: 600 },
+  { name: "Hapus mango 4ft", price: 400 },
+  { name: "Kesar mango 4ft", price: 400 },
+  { name: "Chadasa mango 3ft", price: 500 },
+  { name: "Amrapali 3ft", price: 450 },
+  { name: "Miyajaki 4ft", price: 1800 },
+  { name: "Langada hapus 3ft", price: 400 },
+  { name: "Chiku 3ft", price: 350 },
+  { name: "Anar 3ft", price: 220 },
+  { name: "Sitaphal 4ft", price: 450 },
+  { name: "Peru taiwan 3ft", price: 200 },
+  { name: "Ramphal 5ft", price: 450 },
+  { name: "Jackfruit 4ft", price: 700 },
+  { name: "Neem 5ft", price: 150 },
+  { name: "Moringa 2ft", price: 70 },
+  { name: "Belpatta 5ft", price: 550 },
+  { name: "Supari 6ft", price: 500 },
+  { name: "Pimple 2ft", price: 120 },
+  { name: "Lemon 3ft", price: 300 },
+  { name: "Chinch 6ft", price: 600 },
+  { name: "Kaju vengurla 4ft", price: 300 },
+  { name: "Taiwan papaya 3ft", price: 120 },
+  { name: "Keli 2ft", price: 90 },
+  { name: "Avala 4ft", price: 300 },
+  { name: "Fertilizer", price: 10000 },
+  { name: "Lebour charge", price: 10000 },
+  { name: "Transport charge", price: 11000 },
+];
+
+function filterCatalog(query) {
+  const q = String(query || "").trim().toLowerCase();
+  const list = !q ? ITEM_CATALOG : ITEM_CATALOG.filter((it) => it.name.toLowerCase().includes(q));
+  return list.slice(0, 8);
+}
+
 function defaultBusiness() {
   return {
     name: "Laxmi Garden Developments",
@@ -223,7 +262,7 @@ function bindStaticControls() {
     renderItemsEditor();
     updatePreview();
     scheduleAutosave();
-    const rows = document.querySelectorAll("#itemsBody tr .item-name-input");
+    const rows = document.querySelectorAll("#itemsBody .item-name-input");
     if (rows.length) rows[rows.length - 1].focus();
   });
 
@@ -253,6 +292,80 @@ function bindStaticControls() {
   $("closeHistoryBtn").addEventListener("click", closeHistory);
   $("historyModal").addEventListener("click", (e) => {
     if (e.target.id === "historyModal") closeHistory();
+  });
+
+  // Close any open item-name autocomplete dropdown when tapping/clicking elsewhere.
+  document.addEventListener("pointerdown", (e) => {
+    document.querySelectorAll(".autocomplete-list:not(.hidden)").forEach((list) => {
+      const wrap = list.closest(".autocomplete-wrap");
+      if (!wrap || !wrap.contains(e.target)) closeAutocompleteList(list);
+    });
+  });
+}
+
+function closeAutocompleteList(listEl) {
+  listEl.classList.add("hidden");
+  listEl.innerHTML = "";
+}
+
+/* Wires a text input to a dropdown of catalog matches. The input stays a
+   free-text field — picking a suggestion just fills it in, it never locks
+   the user to the list. */
+function attachItemAutocomplete(wrapEl, inputEl, listEl, onPick) {
+  let matches = [];
+  let activeIndex = -1;
+
+  function render(items) {
+    matches = items;
+    activeIndex = -1;
+    if (items.length === 0) {
+      closeAutocompleteList(listEl);
+      return;
+    }
+    listEl.innerHTML = items
+      .map(
+        (it, i) =>
+          `<div class="autocomplete-item" data-idx="${i}"><span>${escapeHtml(it.name)}</span><span class="ac-price">${fmtMoney(it.price, state.business.currency)}</span></div>`
+      )
+      .join("");
+    listEl.classList.remove("hidden");
+  }
+  function setActive(idx) {
+    activeIndex = idx;
+    [...listEl.children].forEach((el, i) => el.classList.toggle("active", i === idx));
+    const el = listEl.children[idx];
+    if (el) el.scrollIntoView({ block: "nearest" });
+  }
+  function pick(match) {
+    onPick(match);
+    closeAutocompleteList(listEl);
+  }
+
+  inputEl.addEventListener("focus", () => render(filterCatalog(inputEl.value)));
+  inputEl.addEventListener("input", () => render(filterCatalog(inputEl.value)));
+  inputEl.addEventListener("keydown", (e) => {
+    if (listEl.classList.contains("hidden")) return;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setActive(Math.min(activeIndex + 1, matches.length - 1));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setActive(Math.max(activeIndex - 1, 0));
+    } else if (e.key === "Enter") {
+      if (activeIndex >= 0) {
+        e.preventDefault();
+        pick(matches[activeIndex]);
+      }
+    } else if (e.key === "Escape") {
+      closeAutocompleteList(listEl);
+    }
+  });
+  // mousedown (fires before the input's blur) so the click reliably registers
+  listEl.addEventListener("mousedown", (e) => {
+    e.preventDefault();
+    const item = e.target.closest(".autocomplete-item");
+    if (!item) return;
+    pick(matches[parseInt(item.dataset.idx, 10)]);
   });
 }
 
@@ -317,27 +430,47 @@ function populateFormFromState() {
   applyHsnVisibility();
 }
 
-/* ============ Items editor ============ */
+/* ============ Items editor (card-based, touch-friendly) ============ */
 function renderItemsEditor() {
   const body = $("itemsBody");
   body.innerHTML = "";
   state.items.forEach((item, idx) => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td class="col-num">${idx + 1}</td>
-      <td class="col-name"><input type="text" class="item-name-input" placeholder="Item name"></td>
-      <td class="col-hsn hidden-col"><input type="text" class="item-hsn-input" placeholder="HSN/SAC"></td>
-      <td class="col-qty"><input type="number" class="item-qty-input" min="0" step="any"></td>
-      <td class="col-price"><input type="number" class="item-price-input" min="0" step="any"></td>
-      <td class="col-amount row-amount"><span class="item-amount-view"></span></td>
-      <td class="col-del"><button type="button" class="del-row-btn" title="Remove item">🗑️</button></td>
+    const card = document.createElement("div");
+    card.className = "item-card";
+    card.innerHTML = `
+      <div class="item-card-head">
+        <span class="item-index">${idx + 1}</span>
+        <div class="autocomplete-wrap">
+          <input type="text" class="item-name-input" placeholder="Type or pick an item" autocomplete="off">
+          <div class="autocomplete-list hidden"></div>
+        </div>
+        <button type="button" class="del-row-btn" title="Remove item">🗑️</button>
+      </div>
+      <div class="item-card-fields col-hsn hidden-col">
+        <label class="mini-field">HSN/SAC
+          <input type="text" class="item-hsn-input" placeholder="Optional">
+        </label>
+      </div>
+      <div class="item-card-fields">
+        <label class="mini-field">Qty
+          <input type="number" class="item-qty-input" min="0" step="any" inputmode="decimal">
+        </label>
+        <label class="mini-field">Price/Unit
+          <input type="number" class="item-price-input" min="0" step="any" inputmode="decimal">
+        </label>
+        <div class="mini-field amount-field">Amount
+          <span class="amount-view"></span>
+        </div>
+      </div>
     `;
-    const nameInput = tr.querySelector(".item-name-input");
-    const hsnInput = tr.querySelector(".item-hsn-input");
-    const qtyInput = tr.querySelector(".item-qty-input");
-    const priceInput = tr.querySelector(".item-price-input");
-    const amountView = tr.querySelector(".item-amount-view");
-    const delBtn = tr.querySelector(".del-row-btn");
+    const wrap = card.querySelector(".autocomplete-wrap");
+    const list = card.querySelector(".autocomplete-list");
+    const nameInput = card.querySelector(".item-name-input");
+    const hsnInput = card.querySelector(".item-hsn-input");
+    const qtyInput = card.querySelector(".item-qty-input");
+    const priceInput = card.querySelector(".item-price-input");
+    const amountView = card.querySelector(".amount-view");
+    const delBtn = card.querySelector(".del-row-btn");
 
     nameInput.value = item.name;
     hsnInput.value = item.hsn;
@@ -362,7 +495,21 @@ function renderItemsEditor() {
       scheduleAutosave();
     });
 
-    body.appendChild(tr);
+    attachItemAutocomplete(wrap, nameInput, list, (match) => {
+      item.name = match.name;
+      nameInput.value = match.name;
+      if (!parseFloat(item.price)) {
+        item.price = match.price;
+        priceInput.value = match.price;
+      }
+      refreshAmount();
+      updatePreview();
+      scheduleAutosave();
+      qtyInput.focus();
+      qtyInput.select();
+    });
+
+    body.appendChild(card);
   });
   applyHsnVisibility();
 }
