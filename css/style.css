@@ -206,6 +206,11 @@ input[type="date"], input[type="file"], select, textarea {
   color: var(--ink);
   background: #fff;
   width: 100%;
+  /* date/file inputs have a native intrinsic minimum width that ignores
+     width:100% inside a flex row unless this is reset — without it, two
+     of them side by side force the whole page wider than the screen */
+  min-width: 0;
+  box-sizing: border-box;
 }
 input:focus, select:focus, textarea:focus {
   outline: 2px solid var(--brand);
@@ -621,8 +626,16 @@ table.history-table td {
     align-items: stretch;
   }
   .app-header .brand { font-size: 1rem; justify-content: center; }
-  .header-actions { width: 100%; flex-wrap: nowrap; gap: 6px; }
-  .header-actions .btn { flex: 1; padding: 10px 6px; font-size: 0.78rem; white-space: nowrap; }
+  .header-actions { width: 100%; flex-wrap: nowrap; gap: 6px; min-width: 0; }
+  .header-actions .btn {
+    flex: 1;
+    min-width: 0;
+    padding: 10px 4px;
+    font-size: 0.74rem;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.15;
+  }
 
   .app-main { padding: 12px; gap: 14px; }
 
