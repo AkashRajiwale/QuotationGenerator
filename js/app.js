@@ -1,4 +1,4 @@
-/* Quotation Maker — fully client-side, no server, no build step. */
+/* Ak's Quotation Maker — fully client-side, no server, no build step. */
 
 const $ = (id) => document.getElementById(id);
 
@@ -544,7 +544,7 @@ function computeTotals() {
 function updatePreview() {
   const symbol = state.business.currency || "₹";
   $("previewDocTitle").textContent = state.docTitle;
-  document.title = `${state.docTitle} ${state.quoteNo ? "#" + state.quoteNo : ""} — ${state.client.name || "Quotation Maker"}`;
+  document.title = `${state.docTitle} ${state.quoteNo ? "#" + state.quoteNo : ""} — ${state.client.name || "Ak's Quotation Maker"}`;
 
   // Business block
   $("previewBizName").textContent = state.business.name || "Your Business Name";

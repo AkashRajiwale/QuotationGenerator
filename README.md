@@ -1,4 +1,4 @@
-# Quotation Maker
+# Ak's Quotation Maker
 
 A simple, free, no-sign-up quotation/estimate generator that runs entirely in your browser. Built after the "Laxmi Garden Developments" estimate sample — fill in your business details once, add line items, and print or save a clean PDF.
 
