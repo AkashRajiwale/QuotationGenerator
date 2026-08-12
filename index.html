@@ -47,7 +47,7 @@
             <input type="email" id="bizEmail" placeholder="Email address">
           </label>
         </div>
-        <div class="field-row two-col">
+        <div class="field-row two-col hidden">
           <label>GSTIN <span class="hint">(optional)</span>
             <input type="text" id="bizGstin" placeholder="GST number, if any">
           </label>
@@ -154,7 +154,7 @@
       </div>
     </details>
 
-    <details class="card">
+    <details class="card hidden">
       <summary>5. Discount &amp; Tax <span class="hint">(optional)</span></summary>
       <div class="card-body">
         <div class="field-row two-col">
@@ -169,14 +169,14 @@
       </div>
     </details>
 
-    <details class="card">
+    <details class="card hidden">
       <summary>6. Terms &amp; Conditions</summary>
       <div class="card-body">
         <textarea id="termsText" rows="4" placeholder="e.g. Thank you for doing business with us."></textarea>
       </div>
     </details>
 
-    <details class="card">
+    <details class="card hidden">
       <summary>7. Notes</summary>
       <div class="card-body">
         <textarea id="notesText" rows="3" placeholder="Any extra notes for this quotation (optional)"></textarea>
@@ -198,7 +198,7 @@
       <h1 class="doc-title" id="previewDocTitle">Quotation</h1>
 
       <div class="biz-block">
-        <img id="previewLogo" class="biz-logo hidden" alt="Business logo">
+        <img id="previewLogo" class="biz-logo" alt="Business logo">
         <div class="biz-info">
           <div class="biz-name" id="previewBizName">Your Business Name</div>
           <div class="biz-address" id="previewBizAddress"></div>

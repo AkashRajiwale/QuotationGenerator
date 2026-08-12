@@ -10,7 +10,33 @@ const LS_COUNTER = "qm_counter_v1";
 const todayISO = () => new Date().toISOString().slice(0, 10);
 
 function defaultBusiness() {
-  return { name: "", address: "", phone: "", email: "", gstin: "", currency: "₹", logo: "", signature: "" };
+  return {
+    name: "Laxmi Garden Developments",
+    address: "At vasragaon post- kolad tal- roha dist- Raigad",
+    phone: "7264950349",
+    email: "dineshsanap2812@gmail.com",
+    gstin: "",
+    currency: "₹",
+    logo: "",
+    signature: "",
+  };
+}
+
+/* Dummy-but-meaningful logo: a colored monogram built from the business
+   name's initials, used whenever the user hasn't uploaded a real logo. */
+function initialsFromName(name) {
+  const words = String(name || "").trim().split(/\s+/).filter(Boolean);
+  if (words.length === 0) return "QM";
+  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+  return (words[0][0] + words[1][0]).toUpperCase();
+}
+function defaultLogoDataUri(name) {
+  const initials = initialsFromName(name);
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120">
+<rect width="120" height="120" rx="22" fill="#2f6f4f"/>
+<text x="60" y="66" text-anchor="middle" dominant-baseline="middle" font-family="Segoe UI, Arial, sans-serif" font-size="46" font-weight="700" fill="#ffffff">${initials}</text>
+</svg>`;
+  return "data:image/svg+xml;utf8," + encodeURIComponent(svg);
 }
 
 function blankItem() {
@@ -369,12 +395,7 @@ function updatePreview() {
   $("previewBizName").textContent = state.business.name || "Your Business Name";
   $("previewBizAddress").textContent = state.business.address || "";
   const logoImg = $("previewLogo");
-  if (state.business.logo) {
-    logoImg.src = state.business.logo;
-    logoImg.classList.remove("hidden");
-  } else {
-    logoImg.classList.add("hidden");
-  }
+  logoImg.src = state.business.logo || defaultLogoDataUri(state.business.name);
   toggleWithText("previewBizPhoneWrap", "previewBizPhone", state.business.phone);
   toggleWithText("previewBizEmailWrap", "previewBizEmail", state.business.email);
   toggleWithText("previewBizGstinWrap", "previewBizGstin", state.business.gstin);
