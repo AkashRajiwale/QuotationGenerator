@@ -447,10 +447,13 @@ textarea { resize: vertical; font-family: inherit; }
   margin-bottom: 14px;
 }
 .biz-logo {
-  width: 64px;
-  height: 64px;
-  object-fit: cover;
-  border-radius: 8px;
+  /* The logo is a wide wordmark, so scale it to fit rather than cropping it
+     into a square (object-fit:cover would cut off most of the name). */
+  width: auto;
+  height: auto;
+  max-width: 190px;
+  max-height: 62px;
+  object-fit: contain;
   flex-shrink: 0;
 }
 .biz-name { font-size: 1.2rem; font-weight: 800; color: var(--brand-dark); }

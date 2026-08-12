@@ -62,8 +62,12 @@ function defaultBusiness() {
   };
 }
 
-/* Dummy-but-meaningful logo: a colored monogram built from the business
-   name's initials, used whenever the user hasn't uploaded a real logo. */
+/* Default logo shipped with the app, used when the user hasn't uploaded one.
+   Relative path so it resolves under a GitHub Pages subpath too. */
+const DEFAULT_LOGO_SRC = "assets/logo.png";
+
+/* Fallback of last resort: a colored monogram from the business name's
+   initials, used only if DEFAULT_LOGO_SRC fails to load. */
 function initialsFromName(name) {
   const words = String(name || "").trim().split(/\s+/).filter(Boolean);
   if (words.length === 0) return "QM";
@@ -550,7 +554,13 @@ function updatePreview() {
   $("previewBizName").textContent = state.business.name || "Your Business Name";
   $("previewBizAddress").textContent = state.business.address || "";
   const logoImg = $("previewLogo");
-  logoImg.src = state.business.logo || defaultLogoDataUri(state.business.name);
+  // If assets/logo.png is ever missing, fall back to the initials monogram
+  // rather than showing a broken image. Guarded so it can't loop.
+  logoImg.onerror = () => {
+    logoImg.onerror = null;
+    logoImg.src = defaultLogoDataUri(state.business.name);
+  };
+  logoImg.src = state.business.logo || DEFAULT_LOGO_SRC;
   toggleWithText("previewBizPhoneWrap", "previewBizPhone", state.business.phone);
   toggleWithText("previewBizEmailWrap", "previewBizEmail", state.business.email);
   toggleWithText("previewBizGstinWrap", "previewBizGstin", state.business.gstin);
