@@ -402,6 +402,14 @@ textarea { resize: vertical; font-family: inherit; }
 }
 .autocomplete-item:hover,
 .autocomplete-item.active { background: #eef3f0; }
+/* shown when what you typed matches nothing in the catalog */
+.autocomplete-note {
+  padding: 9px 12px;
+  font-size: 0.76rem;
+  color: var(--muted);
+  background: #f7faf8;
+  border-bottom: 1px solid var(--border);
+}
 
 /* ============ Preview panel ============ */
 .preview-panel {

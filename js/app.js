@@ -332,34 +332,55 @@ function attachItemAutocomplete(wrapEl, inputEl, listEl, onPick) {
   let matches = [];
   let activeIndex = -1;
 
-  function render(items) {
+  function render(items, note) {
     matches = items;
     activeIndex = -1;
-    if (items.length === 0) {
-      closeAutocompleteList(listEl);
-      return;
-    }
-    listEl.innerHTML = items
+    const rows = items
       .map(
         (it, i) =>
           `<div class="autocomplete-item" data-idx="${i}"><span>${escapeHtml(it.name)}</span><span class="ac-price">${fmtMoney(it.price, state.business.currency)}</span></div>`
       )
       .join("");
+    const hint = note ? `<div class="autocomplete-note">${escapeHtml(note)}</div>` : "";
+    if (!rows && !hint) {
+      closeAutocompleteList(listEl);
+      return;
+    }
+    listEl.innerHTML = hint + rows;
     listEl.classList.remove("hidden");
+  }
+  // Index the item rows themselves — a note row would offset listEl.children.
+  function itemEls() {
+    return listEl.querySelectorAll(".autocomplete-item");
   }
   function setActive(idx) {
     activeIndex = idx;
-    [...listEl.children].forEach((el, i) => el.classList.toggle("active", i === idx));
-    const el = listEl.children[idx];
-    if (el) el.scrollIntoView({ block: "nearest" });
+    const els = itemEls();
+    els.forEach((el, i) => el.classList.toggle("active", i === idx));
+    if (els[idx]) els[idx].scrollIntoView({ block: "nearest" });
   }
   function pick(match) {
     onPick(match);
     closeAutocompleteList(listEl);
   }
+  // Opening shows the whole catalog, not matches for whatever is already in
+  // the field: once an item is chosen its own name would filter the list down
+  // to just itself, leaving no way to browse to a different item.
+  function openFullList() {
+    render(ITEM_CATALOG);
+  }
 
-  inputEl.addEventListener("focus", () => render(filterCatalog(inputEl.value)));
-  inputEl.addEventListener("input", () => render(filterCatalog(inputEl.value)));
+  inputEl.addEventListener("focus", openFullList);
+  // A tap on an already-focused field fires no focus event, so without this the
+  // list could never be reopened — the field just behaved as a plain input.
+  inputEl.addEventListener("click", openFullList);
+  inputEl.addEventListener("input", () => {
+    const found = filterCatalog(inputEl.value);
+    const typed = inputEl.value.trim();
+    // Keep the dropdown up even with no match, so the field never silently
+    // turns into a plain input; the note explains what will happen.
+    render(found, found.length || !typed ? "" : `No match — "${typed}" will be added as a new item`);
+  });
   inputEl.addEventListener("keydown", (e) => {
     if (listEl.classList.contains("hidden")) return;
     if (e.key === "ArrowDown") {
@@ -377,11 +398,12 @@ function attachItemAutocomplete(wrapEl, inputEl, listEl, onPick) {
       closeAutocompleteList(listEl);
     }
   });
-  // mousedown (fires before the input's blur) so the click reliably registers
-  listEl.addEventListener("mousedown", (e) => {
-    e.preventDefault();
+  // pointerdown covers mouse and touch alike and fires before the input's
+  // blur, so the selection registers instead of the list closing first.
+  listEl.addEventListener("pointerdown", (e) => {
     const item = e.target.closest(".autocomplete-item");
     if (!item) return;
+    e.preventDefault();
     pick(matches[parseInt(item.dataset.idx, 10)]);
   });
 }
