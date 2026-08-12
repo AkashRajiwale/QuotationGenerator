@@ -62,9 +62,11 @@ function defaultBusiness() {
   };
 }
 
-/* Default logo shipped with the app, used when the user hasn't uploaded one.
-   Relative path so it resolves under a GitHub Pages subpath too. */
+/* Default logo and signature shipped with the app, used when the user hasn't
+   uploaded their own. Relative paths so they resolve under a GitHub Pages
+   subpath too. */
 const DEFAULT_LOGO_SRC = "assets/logo.png";
+const DEFAULT_SIGN_SRC = "assets/sign.png";
 
 /* Fallback of last resort: a colored monogram from the business name's
    initials, used only if DEFAULT_LOGO_SRC fails to load. */
@@ -208,9 +210,10 @@ function init() {
   renderItemsEditor();
   updatePreview();
 
-  // Decode the logo up front so the share tap has no slow async work to do —
+  // Decode the images up front so the share tap has no slow async work to do —
   // iOS may reject navigator.share() if the user gesture has gone stale.
   loadImage(state.business.logo || DEFAULT_LOGO_SRC);
+  loadImage(state.business.signature || DEFAULT_SIGN_SRC);
 }
 
 function scheduleAutosave() {
@@ -667,12 +670,10 @@ function updatePreview() {
   // Signature
   $("previewSigFor").textContent = `For ${state.business.name || "Your Business"}:`;
   const sigImg = $("previewSignature");
-  if (state.business.signature) {
-    sigImg.src = state.business.signature;
-    sigImg.classList.remove("hidden");
-  } else {
-    sigImg.classList.add("hidden");
-  }
+  // Falls back to the bundled signature, mirroring how the logo behaves.
+  sigImg.onerror = () => { sigImg.onerror = null; sigImg.classList.add("hidden"); };
+  sigImg.src = state.business.signature || DEFAULT_SIGN_SRC;
+  sigImg.classList.remove("hidden");
 
   applyHsnVisibility();
 }
@@ -1074,7 +1075,7 @@ function drawQuotation(ctx, assets, draw) {
   text(`For ${state.business.name || "Your Business"}:`, right, y, { font: iFont(700, 12), color: IC.muted, align: "right" });
   y += 20;
   if (sig && sig.width && sig.height) {
-    const r = Math.min(150 / sig.width, 50 / sig.height);
+    const r = Math.min(190 / sig.width, 54 / sig.height);
     const sw = sig.width * r, sh = sig.height * r;
     if (draw) ctx.drawImage(sig, right - sw, y, sw, sh);
     y += sh + 4;
@@ -1103,7 +1104,7 @@ async function buildQuotationBlob(scale) {
   const s = scale || 2;
   const assets = {
     logo: await loadImage(state.business.logo || DEFAULT_LOGO_SRC),
-    signature: await loadImage(state.business.signature),
+    signature: await loadImage(state.business.signature || DEFAULT_SIGN_SRC),
   };
   // measuring pass — canvas size is irrelevant to measureText
   const height = drawQuotation(document.createElement("canvas").getContext("2d"), assets, false);

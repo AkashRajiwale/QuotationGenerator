@@ -563,7 +563,8 @@ tr.total-row td {
   text-align: right;
 }
 .sig-for { font-weight: 700; font-size: 0.85rem; color: var(--muted); }
-.sig-image { max-height: 60px; max-width: 160px; margin-top: 4px; }
+/* signature is a wide 3.6:1 image — fit it, never crop or stretch */
+.sig-image { max-height: 54px; max-width: 190px; object-fit: contain; margin-top: 2px; }
 .sig-line {
   margin-top: 4px;
   padding-top: 4px;
