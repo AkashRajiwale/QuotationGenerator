@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quotation Maker</title>
+<meta name="description" content="Create, preview and print professional quotations/estimates in your browser. No sign-up, no server, works offline.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧾</text></svg>">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="app-header no-print">
+  <div class="brand">🧾 <span>Quotation Maker</span></div>
+  <div class="header-actions">
+    <button id="newQuoteBtn" class="btn" title="Start a fresh blank quotation">+ New</button>
+    <button id="historyBtn" class="btn" title="View saved quotations">My Quotations</button>
+    <button id="printBtn" class="btn primary" title="Print or save as PDF">🖨️ Print / Save PDF</button>
+  </div>
+</header>
+
+<div class="save-indicator no-print" id="saveIndicator">Saved</div>
+
+<main class="app-main">
+
+  <!-- ============ FORM PANEL ============ -->
+  <section class="form-panel no-print" id="formPanel">
+
+    <details class="card" open>
+      <summary>1. Your Business</summary>
+      <div class="card-body">
+        <div class="field-row">
+          <label>Business Name*
+            <input type="text" id="bizName" placeholder="e.g. Laxmi Garden Developments">
+          </label>
+        </div>
+        <div class="field-row">
+          <label>Address / Location
+            <input type="text" id="bizAddress" placeholder="Address, city, district">
+          </label>
+        </div>
+        <div class="field-row two-col">
+          <label>Phone
+            <input type="text" id="bizPhone" placeholder="Phone number">
+          </label>
+          <label>Email
+            <input type="email" id="bizEmail" placeholder="Email address">
+          </label>
+        </div>
+        <div class="field-row two-col">
+          <label>GSTIN <span class="hint">(optional)</span>
+            <input type="text" id="bizGstin" placeholder="GST number, if any">
+          </label>
+          <label>Currency Symbol
+            <input type="text" id="currencySymbol" value="₹" maxlength="3">
+          </label>
+        </div>
+        <div class="field-row two-col">
+          <label>Logo <span class="hint">(optional image)</span>
+            <input type="file" id="bizLogoInput" accept="image/*">
+          </label>
+          <label>Signature <span class="hint">(optional image)</span>
+            <input type="file" id="signatureInput" accept="image/*">
+          </label>
+        </div>
+        <div class="field-row logo-preview-row">
+          <div id="bizLogoPreviewWrap" class="img-preview hidden">
+            <img id="bizLogoPreview" alt="Logo preview">
+            <button type="button" class="link-btn" id="removeLogoBtn">Remove logo</button>
+          </div>
+          <div id="signaturePreviewWrap" class="img-preview hidden">
+            <img id="signaturePreview" alt="Signature preview">
+            <button type="button" class="link-btn" id="removeSignatureBtn">Remove signature</button>
+          </div>
+        </div>
+        <p class="tip">💡 These business details are remembered on this device, so you only need to fill them in once.</p>
+      </div>
+    </details>
+
+    <details class="card" open>
+      <summary>2. Quotation Details</summary>
+      <div class="card-body">
+        <div class="field-row two-col">
+          <label>Quotation No.
+            <input type="text" id="quoteNo" placeholder="1">
+          </label>
+          <label>Date
+            <input type="date" id="quoteDate">
+          </label>
+        </div>
+        <div class="field-row two-col">
+          <label>Document Title
+            <select id="docTitle">
+              <option value="Quotation">Quotation</option>
+              <option value="Estimate">Estimate</option>
+              <option value="Invoice">Invoice</option>
+              <option value="Proforma Invoice">Proforma Invoice</option>
+            </select>
+          </label>
+          <label>Valid Until <span class="hint">(optional)</span>
+            <input type="date" id="validUntil">
+          </label>
+        </div>
+      </div>
+    </details>
+
+    <details class="card" open>
+      <summary>3. Quotation For (Client)</summary>
+      <div class="card-body">
+        <div class="field-row">
+          <label>Client Name*
+            <input type="text" id="clientName" placeholder="e.g. Sugata Datta">
+          </label>
+        </div>
+        <div class="field-row two-col">
+          <label>Client Phone
+            <input type="text" id="clientPhone" placeholder="Phone number">
+          </label>
+          <label>Client Email
+            <input type="email" id="clientEmail" placeholder="Email address">
+          </label>
+        </div>
+        <div class="field-row">
+          <label>Client Address
+            <input type="text" id="clientAddress" placeholder="Address">
+          </label>
+        </div>
+      </div>
+    </details>
+
+    <details class="card" open>
+      <summary>4. Items</summary>
+      <div class="card-body">
+        <label class="checkbox-row">
+          <input type="checkbox" id="showHsn"> Show HSN/SAC column
+        </label>
+        <div class="table-scroll">
+          <table class="items-editor" id="itemsEditor">
+            <thead>
+              <tr>
+                <th class="col-num">#</th>
+                <th class="col-name">Item Name</th>
+                <th class="col-hsn hidden-col">HSN/SAC</th>
+                <th class="col-qty">Qty</th>
+                <th class="col-price">Price/Unit</th>
+                <th class="col-amount">Amount</th>
+                <th class="col-del"></th>
+              </tr>
+            </thead>
+            <tbody id="itemsBody"></tbody>
+          </table>
+        </div>
+        <button type="button" class="btn secondary" id="addItemBtn">+ Add Item</button>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary>5. Discount &amp; Tax <span class="hint">(optional)</span></summary>
+      <div class="card-body">
+        <div class="field-row two-col">
+          <label>Discount (%)
+            <input type="number" id="discountPct" min="0" max="100" step="0.01" value="0">
+          </label>
+          <label>Tax / GST (%)
+            <input type="number" id="taxPct" min="0" max="100" step="0.01" value="0">
+          </label>
+        </div>
+        <p class="tip">💡 Leave at 0 if you don't want to apply a discount or tax.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary>6. Terms &amp; Conditions</summary>
+      <div class="card-body">
+        <textarea id="termsText" rows="4" placeholder="e.g. Thank you for doing business with us."></textarea>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary>7. Notes</summary>
+      <div class="card-body">
+        <textarea id="notesText" rows="3" placeholder="Any extra notes for this quotation (optional)"></textarea>
+      </div>
+    </details>
+
+    <div class="form-actions">
+      <button type="button" class="btn" id="saveDraftBtn">💾 Save Quotation</button>
+      <button type="button" class="btn danger" id="clearFormBtn">Clear Form</button>
+    </div>
+  </section>
+
+  <!-- ============ PREVIEW PANEL ============ -->
+  <section class="preview-panel">
+    <div class="preview-toolbar no-print">
+      <span>Live Preview</span>
+    </div>
+    <div class="printable" id="printable">
+      <h1 class="doc-title" id="previewDocTitle">Quotation</h1>
+
+      <div class="biz-block">
+        <img id="previewLogo" class="biz-logo hidden" alt="Business logo">
+        <div class="biz-info">
+          <div class="biz-name" id="previewBizName">Your Business Name</div>
+          <div class="biz-address" id="previewBizAddress"></div>
+          <div class="biz-contact">
+            <span id="previewBizPhoneWrap" class="hidden">Phone: <b id="previewBizPhone"></b></span>
+            <span id="previewBizEmailWrap" class="hidden">Email: <b id="previewBizEmail"></b></span>
+          </div>
+          <div class="biz-contact hidden" id="previewBizGstinWrap">GSTIN: <b id="previewBizGstin"></b></div>
+        </div>
+      </div>
+
+      <div class="meta-block">
+        <div class="meta-col">
+          <div class="meta-label" id="previewForLabel">Quotation For:</div>
+          <div class="meta-value" id="previewClientName">Client Name</div>
+          <div class="meta-sub" id="previewClientAddress"></div>
+          <div class="meta-sub" id="previewClientPhone"></div>
+          <div class="meta-sub" id="previewClientEmail"></div>
+        </div>
+        <div class="meta-col">
+          <div class="meta-label" id="previewDetailsLabel">Quotation Details:</div>
+          <div class="meta-sub">No: <b id="previewQuoteNo"></b></div>
+          <div class="meta-sub">Date: <b id="previewQuoteDate"></b></div>
+          <div class="meta-sub hidden" id="previewValidUntilWrap">Valid Until: <b id="previewValidUntil"></b></div>
+        </div>
+      </div>
+
+      <table class="items-table">
+        <thead>
+          <tr>
+            <th class="col-num">#</th>
+            <th class="col-name">Item Name</th>
+            <th class="col-hsn hidden-col">HSN/SAC</th>
+            <th class="col-qty">Qty</th>
+            <th class="col-price">Price/Unit</th>
+            <th class="col-amount">Amount</th>
+          </tr>
+        </thead>
+        <tbody id="previewItemsBody"></tbody>
+        <tfoot>
+          <tr class="total-row">
+            <td colspan="2" class="totals-label-cell">Total</td>
+            <td class="col-hsn hidden-col"></td>
+            <td id="previewTotalQty" class="col-qty"></td>
+            <td></td>
+            <td id="previewTotalAmount" class="col-amount"></td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <div class="totals-block">
+        <div class="totals-box">
+          <div class="totals-line"><span>Sub Total</span><span id="previewSubTotal">₹ 0.00</span></div>
+          <div class="totals-line hidden" id="previewDiscountLine"><span>Discount (<span id="previewDiscountPct"></span>%)</span><span id="previewDiscountAmt"></span></div>
+          <div class="totals-line hidden" id="previewTaxLine"><span>Tax (<span id="previewTaxPct"></span>%)</span><span id="previewTaxAmt"></span></div>
+          <div class="totals-line grand"><span>Total</span><span id="previewGrandTotal">₹ 0.00</span></div>
+        </div>
+      </div>
+
+      <div class="words-block">
+        <div class="meta-label">Amount In Words:</div>
+        <div id="previewAmountWords"></div>
+      </div>
+
+      <div class="notes-block hidden" id="previewNotesBlock">
+        <div class="meta-label">Notes:</div>
+        <div id="previewNotes"></div>
+      </div>
+
+      <div class="terms-block">
+        <div class="meta-label">Terms And Conditions:</div>
+        <div id="previewTerms">Thank you for doing business with us.</div>
+      </div>
+
+      <div class="signature-block">
+        <div class="sig-for" id="previewSigFor">For Your Business Name:</div>
+        <img id="previewSignature" class="sig-image hidden" alt="Signature">
+        <div class="sig-line">Authorized Signatory</div>
+      </div>
+
+      <div class="footer-note">Generated with Quotation Maker</div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ============ HISTORY MODAL ============ -->
+<div class="modal hidden no-print" id="historyModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>My Quotations</h2>
+      <button class="icon-btn" id="closeHistoryBtn">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="historyEmpty" class="hidden">No saved quotations yet. Fill the form and click "Save Quotation".</div>
+      <table class="history-table" id="historyTable">
+        <thead>
+          <tr><th>No.</th><th>Client</th><th>Date</th><th>Total</th><th></th></tr>
+        </thead>
+        <tbody id="historyBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
