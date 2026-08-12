@@ -134,6 +134,9 @@ button, input, select, textarea {
   align-items: start;
   max-width: 1500px;
   margin: 0 auto;
+  /* second containment layer, so nothing inside can widen the page */
+  min-width: 0;
+  overflow-x: clip;
 }
 @media (max-width: 980px) {
   .app-main { grid-template-columns: 1fr; }
@@ -154,7 +157,10 @@ button, input, select, textarea {
   background: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  overflow: hidden;
+  min-width: 0;
+  /* NOT overflow:hidden — that would clip the item-name dropdown whenever
+     it extends past the card's bottom edge. The summary rounds its own
+     corners instead, so the card still looks clipped. */
 }
 .card summary {
   cursor: pointer;
@@ -162,6 +168,7 @@ button, input, select, textarea {
   font-weight: 700;
   background: #eef3f0;
   color: var(--brand-dark);
+  border-radius: 9px 9px 0 0;
   list-style: none;
   display: flex;
   align-items: center;
@@ -175,6 +182,8 @@ button, input, select, textarea {
   font-size: 0.8em;
 }
 .card[open] summary::before { transform: rotate(90deg); }
+/* when collapsed the summary is the whole visible card, so round all corners */
+.card:not([open]) summary { border-radius: 9px; }
 .card-body {
   padding: 14px 16px 16px;
   display: flex;
@@ -683,8 +692,11 @@ table.history-table td {
 /* ============ Print ============ */
 @media print {
   .no-print { display: none !important; }
+  /* never clip or scroll on paper — everything must be laid out in full */
+  html, body { overflow: visible; }
   body { background: #fff; }
-  .app-main { display: block; padding: 0; }
+  .app-main { display: block; padding: 0; overflow: visible; }
+  .table-scroll { overflow: visible; }
   .printable {
     border: none;
     box-shadow: none;
