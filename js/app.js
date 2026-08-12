@@ -21,7 +21,7 @@ const ITEM_CATALOG = [
   { name: "Miyajaki 4ft", price: 1800 },
   { name: "Langada hapus 3ft", price: 400 },
   { name: "Chiku 3ft", price: 350 },
-  { name: "Anar 3ft", price: 220 },
+  { name: "Anar3ft", price: 220 },
   { name: "Sitaphal 4ft", price: 450 },
   { name: "Peru taiwan 3ft", price: 200 },
   { name: "Ramphal 5ft", price: 450 },
@@ -44,8 +44,9 @@ const ITEM_CATALOG = [
 
 function filterCatalog(query) {
   const q = String(query || "").trim().toLowerCase();
-  const list = !q ? ITEM_CATALOG : ITEM_CATALOG.filter((it) => it.name.toLowerCase().includes(q));
-  return list.slice(0, 8);
+  // Catalog is small (a couple dozen items) so show every match — the
+  // dropdown scrolls — rather than hiding items past an arbitrary cutoff.
+  return !q ? ITEM_CATALOG : ITEM_CATALOG.filter((it) => it.name.toLowerCase().includes(q));
 }
 
 function defaultBusiness() {
